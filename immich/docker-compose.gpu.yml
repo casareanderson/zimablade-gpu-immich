@@ -1,0 +1,52 @@
+# Immich machine-learning on an NVIDIA GPU — the two changes that matter.
+#
+# This is the GPU-relevant fragment of a working Immich stack, read back off a
+# live container on ZimaOS. Merge it into your existing docker-compose.yml
+# rather than running it standalone.
+#
+# 1. The image tag MUST end in -cuda. The plain tag runs on CPU forever and
+#    never tells you.
+# 2. The container needs a GPU device request. Docker's `default` runtime can
+#    stay `runc` — you do not need to make the whole daemon GPU-aware.
+
+services:
+  immich-machine-learning:
+    # (1) the -cuda variant — not the plain tag
+    image: ghcr.io/immich-app/immich-machine-learning:v3.0.1-cuda
+    container_name: immich-machine-learning
+    restart: unless-stopped
+    volumes:
+      - model-cache:/cache
+    env_file:
+      - .env
+    environment:
+      DEVICE: cuda
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    # (2) the device request
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  model-cache:
+
+# Verify it took:
+#
+#   docker inspect immich-machine-learning --format '{{.Config.Image}}'
+#     → must contain -cuda
+#   docker inspect immich-machine-learning --format '{{.HostConfig.DeviceRequests}}'
+#     → [{nvidia 1 [] [[gpu]]}]
+#
+# Then watch the logs during a smart-search or face-detection job. If the GPU is
+# missing or has died, ONNX Runtime fails SAFE and you will see:
+#
+#   CUDA failure 100: no CUDA-capable device is detected
+#   Falling back to ['CPUExecutionProvider'] and retrying.
+#
+# Everything keeps working, just slowly — which is why a dead GPU can go
+# unnoticed for days. Alert on that log line.
