@@ -252,3 +252,12 @@ $ ./diagnostics/zima-gpu-check.sh
 ---
 
 *Every command output reproduced here was captured from the running machine. The build is not finished — it is documented at the point where the fault is understood but the cable has not yet been replaced.*
+
+---
+
+## Related
+
+**[ZimaBlade recipes](https://github.com/casareanderson/zimablade-recipes)** — the companion repo:
+running a ZimaBlade like a server rather than an appliance. Borrowing root from Docker on an OS
+where you cannot `sudo`, backups that actually include your certificates, and getting a photo
+library offsite without paying to store what the server can regenerate.
