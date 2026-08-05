@@ -85,7 +85,9 @@ One useful detail on longevity: driver branch **580 is the last one to support M
 
 ## 03 · Power, and one genuine fire hazard
 
-The stock ZimaBlade supply is **12 V at 3 A — 36 W total**. The board, RAM and two SATA drives already draw roughly 25–30 W of that. There is no version of the arithmetic where it also feeds a 40 W graphics card. An external supply is mandatory, not optional.
+The ZimaBlade takes its power **over USB-C**, not a barrel jack — Zima's own spec sheet lists `"Power": 36 W USB Type-C power adapter`, i.e. 12 V at 3 A. (Kits shipped since late 2025 include a 12 V/5 A 60 W USB-C adapter instead; check which one you have before doing any arithmetic.)
+
+On the 36 W supply, the board, RAM and two SATA drives already draw roughly 25–30 W. There is no version of the arithmetic where it also feeds a 40 W graphics card. An external supply is mandatory, not optional.
 
 Most people reach for a powered mining riser, which is the right instinct. Two warnings come with it:
 
@@ -96,7 +98,10 @@ Most people reach for a powered mining riser, which is the right instinct. Two w
 >
 > If the ZimaBlade runs from its own two-pin (unearthed, floating) brick while the GPU runs from an earthed ATX supply, the only thing bonding those grounds is the thin ground wires in a USB 3 cable. PCIe uses differential signalling with a narrow common-mode range — a floating offset between the two domains produces exactly the signature you'd least expect: **power is obviously fine, and the data link never works.**
 >
-> The clean fix is to run the whole thing from one supply. The ZimaBlade is a 12 V device, so a barrel-jack pigtail off a Molex lead puts board and card in a single ground domain — and disposes of the 36 W ceiling at the same time.
+> The clean fix is to get both ends onto one ground. Two ways, and the connector matters — the ZimaBlade's input is USB-C, so there is no barrel jack to pigtail:
+>
+> - **Bond the grounds.** Run a wire from the ATX supply's COM (any black lead) to the ZimaBlade's ground. Cheapest possible test, and it leaves both supplies in place.
+> - **Feed the board from the same supply as the card**, via a 12 V-to-USB-C lead. Verify with a meter that your unit accepts fixed 12 V on VBUS before trusting this — Zima's own adapter is a fixed-12 V USB-C brick rather than a standard PD source, so the port is not doing normal PD negotiation.
 
 ---
 
@@ -161,6 +166,21 @@ Two things worth knowing. First, the plain image tag will silently run on CPU fo
 >
 > Face recognition and smart search keep working, just slowly. Good design — but it means a dead GPU can go unnoticed for days. Mine did: six.
 
+### Check that Immich still supports your card at all
+
+This is the trap that makes the cheap-old-card plan fall apart, and it has nothing to do with the hardware.
+
+**Immich v3 dropped Maxwell and Pascal machine learning.** ONNX Runtime no longer ships kernels for compute capability 5.2 and 6.1 in a single image, so the `v3.x-cuda` ML container will not run on a GTX 9xx, GTX 10xx or Quadro P-series card. Reported symptom is not a graceful message — it's an immediate crash, exit code 132 / SIGILL.
+
+That is the *opposite* failure mode to the CPU fallback above, and worth internalising before you buy: on a pre-Turing card, a **working** GPU can leave you worse off than a missing one, because a missing GPU falls back to CPU and a crashing container just restarts forever.
+
+Two honest options if your card is pre-Turing:
+
+- **Pin the ML container** to the last release that supports it: `ghcr.io/immich-app/immich-machine-learning:v2.4.1-cuda`, while letting the server itself move on. Community-tested, but you're freezing one component.
+- **Use the card for video transcoding only** and leave ML on CPU. NVENC on GP10x is unaffected by any of this — it's a fixed-function encoder, not a CUDA kernel.
+
+The same architecture cliff exists one layer down: driver branch **580 is the last to support Maxwell, Pascal and Volta**, and cuDNN dropped them at 9.11 (9.10.2 is the last usable). Three independent vendors retiring the same hardware generation within a year is the actual reason a £30 used Quadro is a worse deal than it looks.
+
 ---
 
 ## 06 · When it works, then doesn't: reading Xid 79
@@ -202,7 +222,7 @@ A VER009S is expected to give x1. It is **not** expected to drop to 2.5 GT/s —
 ### Fix order
 
 1. **Swap the riser's USB 3 cable.** It is the single most common failure point in these kits, and errors at a downgraded speed point straight at it. Cheapest thing to change, so change it first.
-2. **Get onto one ground domain.** Power the ZimaBlade itself from the ATX supply rather than its own floating brick.
+2. **Get onto one ground domain.** Bond the ATX supply's COM to the ZimaBlade's ground, or run the board from the same 12 V supply as the card. Note the input is USB-C, not a barrel jack.
 3. **Reseat the card in the x16 board.** Ribbon and riser assemblies fake-seat convincingly.
 
 And note the recovery requirement: Xid 154 says **GPU Reset Required**, so the card will not come back without a reboot — it will sit dead until you give it one. On a NAS running your SSO, reverse proxy and photo library, that reboot is not free. Plan it.
