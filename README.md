@@ -261,3 +261,14 @@ $ ./diagnostics/zima-gpu-check.sh
 running a ZimaBlade like a server rather than an appliance. Borrowing root from Docker on an OS
 where you cannot `sudo`, backups that actually include your certificates, and getting a photo
 library offsite without paying to store what the server can regenerate.
+
+---
+
+## The packaged version
+
+The same guide is also available as a single download — the written guide plus the
+diagnostic script, without cloning anything. It is **pay what you want, including nothing**:
+
+**[ZimaBlade GPU Guide →](https://asareanderson.gumroad.com/l/jthell)**
+
+Everything in this repo stays free and stays here.
