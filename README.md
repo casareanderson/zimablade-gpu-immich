@@ -322,3 +322,5 @@ The same guide plus the diagnostic script is also a single download, pay what yo
 MIT, see [LICENSE](LICENSE).
 
 ZimaBlade and ZimaOS are IceWhale products; NVIDIA, Quadro and CUDA are NVIDIA trademarks; Immich is an independent open-source project. This repo is not affiliated with any of them. The compose fragment pulls Immich's published `immich-machine-learning` image, which is under Immich's own licence.
+
+If this is useful to you, [buy me a coffee](https://buymeacoffee.com/iamc_tech) ☕
