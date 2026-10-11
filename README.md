@@ -7,6 +7,7 @@ A field report and a read-only diagnostic script for anyone fitting a GPU to a Z
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 ![Language: Bash](https://img.shields.io/badge/language-Bash-green.svg)
 ![Status: build unfinished](https://img.shields.io/badge/status-build%20unfinished-orange.svg)
+[![Buy Me a Coffee](https://raw.githubusercontent.com/casareanderson/.github/main/badges/bmc-yellow.svg)](https://buymeacoffee.com/iamc_tech)
 
 Every number here was read off a running machine, not a spec sheet, including the ones that stopped the build. The build is not finished: the card enumerates, the driver binds and Immich can use it, and then the GPU drops off the PCIe bus and stays gone until a reboot.
 
