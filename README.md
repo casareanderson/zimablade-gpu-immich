@@ -25,6 +25,7 @@ Every number here was read off a running machine, not a spec sheet, including th
 
 - **`diagnostics/zima-gpu-check.sh`** runs every check in the guide in one read-only pass: slot capabilities, Above-4G windows, presence detect, link training, whether a GPU is on the bus, link error counters, driver state, Xid history, and whether the Immich ML container is really on the GPU.
 - It detects when it is running without root and says which sections need it, instead of printing empty output that looks like a hardware fault.
+- **`diagnostics/zima-gpu-watch.sh`** checks every few minutes whether the GPU is still on the bus, logs how many hours each boot's GPU lasted, and alerts once per change (fell off, came back) to stdout and an optional webhook. An unreachable Zima is never counted as a dead GPU.
 - **`immich/docker-compose.gpu.yml`** is the GPU fragment of a working Immich stack: the `-cuda` image and a per-container device request.
 - **The guide** (below) covers reading the slot before you buy a card, why you should not install the open NVIDIA kernel module on a pre-Turing card, power and grounding with a riser, isolating a dead slot with presence detect, Immich v3 dropping Pascal and Maxwell, and reading Xid 79.
 
@@ -75,6 +76,14 @@ docker inspect immich-machine-learning --format '{{.HostConfig.DeviceRequests}}'
 
 Then watch the container's logs during a smart-search or face-detection job for the CPU fallback line (see [section 05](#05--wiring-it-into-immich)).
 
+**Get told when it falls off the bus:** run the watcher every 15 minutes from another always-on machine. It alerts once when the GPU goes and once when it's back:
+
+```bash
+ZIMA=you@zima GPU_MATCH=P600 WEBHOOK=https://discord.com/api/webhooks/... bash diagnostics/zima-gpu-watch.sh
+```
+
+Settings and a dry run with a stand-in `nvidia-smi` are in [docs/SETUP.md](docs/SETUP.md#3-watch-it).
+
 ## Configuration
 
 | Name | Default | What it does |
@@ -107,6 +116,8 @@ flowchart TD
 ```
 zimablade-gpu-immich/
 ├── diagnostics/zima-gpu-check.sh   the nine read-only checks
+├── diagnostics/zima-gpu-watch.sh   is it still on the bus? alerts once per change
+├── docs/SETUP.md                   setup guide, tested weekly on a fresh machine
 ├── immich/docker-compose.gpu.yml   the GPU fragment of an Immich stack
 └── docs/gpu-check.png              the screenshot above
 ```
