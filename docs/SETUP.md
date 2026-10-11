@@ -16,6 +16,11 @@ The blocks marked as tested run on a fresh Ubuntu runner every week in
 cleanly on a machine without one, and that the watcher's alive/dead logic alerts exactly once per change (using a
 stand-in for `nvidia-smi`). The steps on your Zima aren't marked.
 
+
+![What it looks like: the watcher against a real ZimaBlade whose GPU had fallen off the bus, then the alive/dead check from `setup-check`, alerting once per change](setup-run.png)
+
+*What it looks like: the watcher against a real ZimaBlade whose GPU had fallen off the bus, then the alive/dead check from `setup-check`, alerting once per change.*
+
 ## What you need
 
 - A ZimaBlade (or any Linux box with a GPU in a PCIe slot) and a shell on it.
